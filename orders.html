@@ -111,7 +111,8 @@
         .time-cell {
             font-weight: bold;
             color: #E67E22;
-            width: 100px;
+            width: 120px; /* מעט יותר רחב לתאריך ושעה */
+            font-size: 14px;
         }
         
         .name-cell {
@@ -127,37 +128,42 @@
         }
         
         .status-cell {
-            width: 120px;
+            width: 180px; /* הרחבה לכפתורים גדולים */
             text-align: center;
         }
         
         .status-toggle {
             background: #f8f9fa;
-            border: 2px solid #e9ecef;
+            border: 3px solid #e9ecef;
             border-radius: 25px;
-            padding: 8px 16px;
+            padding: 20px 30px; /* הגדלה פי 3 */
             cursor: pointer;
             transition: all 0.3s;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 18px; /* הגדלה מ-14px */
+            min-width: 120px;
+            display: inline-block;
         }
         
         .status-toggle.pending {
             background: #fff3cd;
             border-color: #ffc107;
             color: #856404;
+            font-size: 18px;
         }
         
         .status-toggle.preparing {
             background: #d1ecf1;
             border-color: #17a2b8;
             color: #0c5460;
+            font-size: 18px;
         }
         
         .status-toggle.ready {
             background: #d4edda;
             border-color: #28a745;
             color: #155724;
+            font-size: 18px;
         }
         
         .empty-state {
@@ -237,12 +243,13 @@
             }
             
             .status-cell {
-                width: 100px;
+                width: 150px; /* קטן יותר בנייד אבל עדיין גדול */
             }
             
             .status-toggle {
-                padding: 6px 12px;
-                font-size: 12px;
+                padding: 15px 20px; /* קטן יותר בנייד */
+                font-size: 16px;
+                min-width: 100px;
             }
         }
     </style>
@@ -279,7 +286,7 @@
             try {
                 const params = new URLSearchParams({
                     action: 'getRecentOrders',
-                    limit: 20
+                    limit: 10  // רק 10 הזמנות
                 });
                 
                 const response = await fetch(`${GOOGLE_SCRIPT_URL}?${params.toString()}`, {
@@ -310,7 +317,7 @@
             if (orders.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <h3>אין הזמנות פעילות</h3>
+                        <h3>אין הזמנות מהיום</h3>
                         <p>הזמנות חדשות יופיעו כאן אוטומטית</p>
                     </div>
                 `;
@@ -354,9 +361,12 @@
             
             const status = statusConfig[currentStatus];
             
+            // עיצוב זמן פשוט - רק שעה:דקה
+            const timeDisplay = order.time;
+            
             return `
                 <tr>
-                    <td class="time-cell">${order.time}</td>
+                    <td class="time-cell">${timeDisplay}</td>
                     <td class="name-cell">${order.customerName}</td>
                     <td class="products-cell">${order.products}</td>
                     <td class="status-cell">
