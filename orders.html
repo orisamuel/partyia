@@ -155,7 +155,7 @@
         }
         
         .date-cell {
-            font-weight: bold;
+            font-weight: normal;
             color: #666;
             width: 100px;
             font-size: 14px;
@@ -166,24 +166,6 @@
             color: #E67E22;
             width: 80px;
             font-size: 16px;
-        }
-        
-        .date-time-container {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-        
-        .date-display {
-            font-size: 12px;
-            color: #888;
-            font-weight: normal;
-        }
-        
-        .time-display {
-            font-size: 16px;
-            color: #E67E22;
-            font-weight: bold;
         }
         
         .name-cell {
@@ -525,16 +507,8 @@
             
             return `
                 <tr>
-                    <td class="date-cell">
-                        <div class="date-time-container">
-                            <div class="date-display">${order.date}</div>
-                        </div>
-                    </td>
-                    <td class="time-cell">
-                        <div class="date-time-container">
-                            <div class="time-display">${order.time}</div>
-                        </div>
-                    </td>
+                    <td class="date-cell">${order.date}</td>
+                    <td class="time-cell">${order.time}</td>
                     <td class="name-cell">${order.customerName}</td>
                     <td class="products-cell">${order.products}</td>
                     <td class="status-cell">
