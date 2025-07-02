@@ -265,7 +265,7 @@
         
         <div class="content">
             <div class="refresh-info">
-                מתרענן כל 8 שניות <span class="refresh-dot"></span>
+                מתרענן כל 15 שניות <span class="refresh-dot"></span>
             </div>
             
             <div id="ordersContainer">
@@ -284,26 +284,40 @@
         // פונקציה לטעינת הזמנות מהשרת
         async function loadOrders() {
             try {
+                console.log('טוען הזמנות...');
+                
                 const params = new URLSearchParams({
                     action: 'getRecentOrders',
-                    limit: 10  // רק 10 הזמנות
+                    limit: 50  // כל ההזמנות (מגביל ל-50 למקרה של עומס)
                 });
                 
                 const response = await fetch(`${GOOGLE_SCRIPT_URL}?${params.toString()}`, {
                     method: 'GET'
                 });
                 
+                console.log('תגובה:', response.status);
+                
                 if (response.ok) {
                     const result = await response.text();
+                    console.log('תוכן גולמי:', result);
+                    
                     try {
                         const jsonResult = JSON.parse(result);
+                        console.log('JSON מפורסר:', jsonResult);
+                        
                         if (jsonResult.success) {
                             orders = jsonResult.orders || [];
+                            console.log('נטענו', orders.length, 'הזמנות');
                             renderOrders();
+                        } else {
+                            console.error('שגיאה מהשרת:', jsonResult.message);
                         }
                     } catch (e) {
                         console.error('שגיאה בפרסור JSON:', e);
+                        console.log('תוכן שלא ניתן לפרסר:', result);
                     }
+                } else {
+                    console.error('שגיאה בבקשה:', response.status);
                 }
             } catch (error) {
                 console.error('שגיאה בטעינת הזמנות:', error);
@@ -418,8 +432,8 @@
             loadStoredStatuses();
             await loadOrders();
             
-            // רענון אוטומטי כל 8 שניות
-            setInterval(loadOrders, 8000);
+            // רענון אוטומטי כל 15 שניות
+            setInterval(loadOrders, 15000);
         }
         
         // התחלה כשהדף נטען
