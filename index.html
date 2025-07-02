@@ -451,8 +451,10 @@
             const submitBtn = document.getElementById('submitBtn');
             const customerName = document.getElementById('customerName').value.trim();
             const hasProducts = Object.keys(selectedItems).length > 0;
+            const customAmount = parseInt(document.getElementById('customAmount').value) || 0;
             
-            submitBtn.disabled = !customerName || !hasProducts;
+            // אפשר לשלוח אם יש שם + (מוצרים או סכום חופשי)
+            submitBtn.disabled = !customerName || (!hasProducts && customAmount === 0);
         }
         
         // עדכון רשימת הזמנות אחרונות
@@ -515,7 +517,7 @@
             const submitBtn = document.getElementById('submitBtn');
             
             if (!customerName || (Object.keys(selectedItems).length === 0 && customAmount === 0)) {
-                showStatus('אנא מלא את השם ובחר לפחות מוצר אחד או הכנס סכום חופשי', 'error');
+                showStatus('אנא מלא את השם ובחר מוצרים או הכנס סכום חופשי', 'error');
                 return;
             }
             
