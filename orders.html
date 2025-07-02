@@ -492,6 +492,50 @@
             });
         }
         
+        // פונקציה לניקוי תאריך
+        function cleanDate(dateStr) {
+            if (!dateStr) return 'לא צוין';
+            
+            const str = dateStr.toString();
+            
+            // אם יש GMT, זה Date object שהומר למחרוזת
+            if (str.includes('GMT')) {
+                // נחפש דפוס של תאריך בסגנון "Mon Jun 30 2025"
+                const dateMatch = str.match(/(\w{3})\s+(\w{3})\s+(\d{1,2})\s+(\d{4})/);
+                if (dateMatch) {
+                    const [, dayName, month, day, year] = dateMatch;
+                    
+                    // המרת חודש לספרות
+                    const months = {
+                        'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+                        'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+                        'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+                    };
+                    
+                    const monthNum = months[month] || month;
+                    return `${day.padStart(2, '0')}/${monthNum}/${year}`;
+                }
+            }
+            
+            // אם זה כבר נראה כמו תאריך רגיל, נחזיר כמו שזה
+            return str;
+        }
+        
+        // פונקציה לניקוי שעה
+        function cleanTime(timeStr) {
+            if (!timeStr) return 'לא צוין';
+            
+            const str = timeStr.toString();
+            
+            // נחפש דפוס של שעה:דקה:שניה
+            const timeMatch = str.match(/(\d{1,2}):(\d{2}):(\d{2})/);
+            if (timeMatch) {
+                return `${timeMatch[1].padStart(2, '0')}:${timeMatch[2]}`;
+            }
+            
+            // אם זה כבר נראה כמו שעה רגילה, נחזיר כמו שזה
+            return str;
+        }
         // פונקציה ליצירת שורת הזמנה
         function createOrderRow(order) {
             const orderId = order.orderId;
@@ -505,10 +549,14 @@
             
             const status = statusConfig[currentStatus];
             
+            // ניקוי התאריך והשעה
+            const cleanedDate = cleanDate(order.date);
+            const cleanedTime = cleanTime(order.time);
+            
             return `
                 <tr>
-                    <td class="date-cell">${order.date}</td>
-                    <td class="time-cell">${order.time}</td>
+                    <td class="date-cell">${cleanedDate}</td>
+                    <td class="time-cell">${cleanedTime}</td>
                     <td class="name-cell">${order.customerName}</td>
                     <td class="products-cell">${order.products}</td>
                     <td class="status-cell">
