@@ -173,6 +173,39 @@
             transform: none;
         }
         
+        .submit-btn.loading {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            position: relative;
+        }
+        
+        .submit-btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            margin: auto;
+            border: 2px solid transparent;
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: spin 1s ease infinite;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
         .status {
             text-align: center;
             padding: 15px;
@@ -469,11 +502,18 @@
             const customerName = document.getElementById('customerName').value.trim();
             const customAmount = parseInt(document.getElementById('customAmount').value) || 0;
             const customDescription = document.getElementById('customDescription').value.trim();
+            const submitBtn = document.getElementById('submitBtn');
             
             if (!customerName || (Object.keys(selectedItems).length === 0 && customAmount === 0)) {
                 showStatus('אנא מלא את השם ובחר מוצרים או הכנס סכום חופשי', 'error');
                 return;
             }
+            
+            // חיווי מיידי - רק שינוי הכפתור
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'שולח...';
             
             const productsList = [];
             for (const [name, item] of Object.entries(selectedItems)) {
@@ -505,6 +545,12 @@
             
             try {
                 const response = await sendToGoogleSheets(newOrder);
+                
+                // החזרת הכפתור למצב רגיל
+                submitBtn.classList.remove('loading');
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+                
                 if (response.success) {
                     showStatus(`הזמנה נרשמה בהצלחה! ${customerName} - ₪${total}`, 'success');
                     resetForm();
@@ -512,6 +558,11 @@
                     showStatus('שגיאה בשמירת ההזמנה: ' + response.message, 'error');
                 }
             } catch (error) {
+                // החזרת הכפתור למצב רגיל גם במקרה של שגיאה
+                submitBtn.classList.remove('loading');
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+                
                 showStatus('שגיאה בחיבור לשרת: ' + error.message, 'error');
             }
             
