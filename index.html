@@ -487,16 +487,22 @@
                 const urlWithParams = `${GOOGLE_SCRIPT_URL}?${params.toString()}`;
                 
                 const response = await fetch(urlWithParams, {
-                    method: 'GET',
-                    mode: 'no-cors'  // זה יפתור את בעיית ה-CORS
+                    method: 'GET'
                 });
                 
-                // עם no-cors לא נוכל לקרוא את התגובה, אז נניח שהצלחנו
-                console.log('הזמנה נשלחה (no-cors mode)');
-                return { success: true, message: 'נשלח בהצלחה' };
+                if (response.ok) {
+                    const result = await response.text();
+                    try {
+                        const jsonResult = JSON.parse(result);
+                        return jsonResult;
+                    } catch (e) {
+                        return { success: true, message: 'נשלח בהצלחה' };
+                    }
+                } else {
+                    return { success: false, message: `שגיאה ${response.status}` };
+                }
                 
             } catch (error) {
-                console.error('שגיאה בשליחה:', error);
                 return { success: false, message: error.toString() };
             }
         }
