@@ -394,6 +394,15 @@
                                 <input type="text" id="customDescription" placeholder="תיאור (למשל: טיפ)" style="flex: 2;">
                             </div>
                         </div>
+                        
+                        <!-- הנחה - רק במובייל -->
+                        <div class="form-group mobile-only">
+                            <label for="discountAmount">הנחה (אופציונלי):</label>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="number" id="discountAmount" placeholder="₪0" style="flex: 1;" min="0">
+                                <input type="text" id="discountDescription" placeholder="סיבת ההנחה" style="flex: 2;">
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="form-sidebar">
@@ -403,6 +412,15 @@
                             <div style="display: flex; flex-direction: column; gap: 10px;">
                                 <input type="number" id="customAmountDesktop" placeholder="₪0" min="0">
                                 <input type="text" id="customDescriptionDesktop" placeholder="תיאור (למשל: טיפ)">
+                            </div>
+                        </div>
+                        
+                        <!-- הנחה - רק בדסקטופ -->
+                        <div class="form-group desktop-only">
+                            <label for="discountAmountDesktop">הנחה (אופציונלי):</label>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <input type="number" id="discountAmountDesktop" placeholder="₪0" min="0">
+                                <input type="text" id="discountDescriptionDesktop" placeholder="סיבת ההנחה">
                             </div>
                         </div>
                         
@@ -435,7 +453,7 @@
         const PRODUCTS = [
             { name: 'בירה', emoji: '🍺', price: 15 },
             { name: 'יין', emoji: '🍷', price: 25 },
-            { name: 'לימונערק', emoji: '🍋', price: 30 },
+            { name: 'לימונערק', emoji: '🍋', price: 25 },
             { name: 'ויסקי סאוור ליצ\'י', emoji: '🥃', price: 30 },
             { name: 'ויסקי סאוור אננס', emoji: '🍍', price: 30 },
             { name: 'מוחיטו', emoji: '🌿', price: 30 },
@@ -541,12 +559,17 @@
             const productsTotal = Object.values(selectedItems).reduce((sum, item) => 
                 sum + (item.price * item.quantity), 0);
             
-            // בדיקה של שני השדות (מובייל ודסקטופ)
+            // בדיקה של שני השדות (מובייל ודסקטופ) - סכום חופשי
             const customAmountMobile = parseInt(document.getElementById('customAmount').value) || 0;
             const customAmountDesktop = parseInt(document.getElementById('customAmountDesktop').value) || 0;
             const customAmount = customAmountMobile + customAmountDesktop;
             
-            const total = productsTotal + customAmount;
+            // בדיקה של שני השדות (מובייל ודסקטופ) - הנחה
+            const discountAmountMobile = parseInt(document.getElementById('discountAmount').value) || 0;
+            const discountAmountDesktop = parseInt(document.getElementById('discountAmountDesktop').value) || 0;
+            const discountAmount = discountAmountMobile + discountAmountDesktop;
+            
+            const total = Math.max(0, productsTotal + customAmount - discountAmount);
             
             document.getElementById('totalAmount').textContent = `סכום כולל: ₪${total}`;
         }
@@ -559,7 +582,8 @@
             const customAmountDesktop = parseInt(document.getElementById('customAmountDesktop').value) || 0;
             const customAmount = customAmountMobile + customAmountDesktop;
             
-            submitBtn.disabled = !customerName || (!hasProducts && customAmount === 0);
+            // אפשר הזמנה גם אם הסכום הוא 0 (הנחה מלאה או הזמנה חופשית)
+            submitBtn.disabled = !customerName;
         }
         
         function updateRecentOrders() {
@@ -621,10 +645,18 @@
             const customDescriptionMobile = document.getElementById('customDescription').value.trim();
             const customDescriptionDesktop = document.getElementById('customDescriptionDesktop').value.trim();
             const customDescription = customDescriptionMobile || customDescriptionDesktop;
+            
+            const discountAmountMobile = parseInt(document.getElementById('discountAmount').value) || 0;
+            const discountAmountDesktop = parseInt(document.getElementById('discountAmountDesktop').value) || 0;
+            const discountAmount = discountAmountMobile + discountAmountDesktop;
+            const discountDescriptionMobile = document.getElementById('discountDescription').value.trim();
+            const discountDescriptionDesktop = document.getElementById('discountDescriptionDesktop').value.trim();
+            const discountDescription = discountDescriptionMobile || discountDescriptionDesktop;
+            
             const submitBtn = document.getElementById('submitBtn');
             
-            if (!customerName || (Object.keys(selectedItems).length === 0 && customAmount === 0)) {
-                showStatus('אנא מלא את השם ובחר מוצרים או הכנס סכום חופשי', 'error');
+            if (!customerName) {
+                showStatus('אנא מלא את השם', 'error');
                 return;
             }
             
@@ -648,9 +680,14 @@
                 productsList.push(customItem);
             }
             
+            if (discountAmount > 0) {
+                const discountItem = discountDescription ? `הנחה: ${discountDescription} -₪${discountAmount}` : `הנחה -₪${discountAmount}`;
+                productsList.push(discountItem);
+            }
+            
             const productsTotal = Object.values(selectedItems).reduce((sum, item) => 
                 sum + (item.price * item.quantity), 0);
-            const total = productsTotal + customAmount;
+            const total = Math.max(0, productsTotal + customAmount - discountAmount);
             
             const newOrder = {
                 name: customerName,
@@ -705,6 +742,10 @@
             document.getElementById('customDescription').value = '';
             document.getElementById('customAmountDesktop').value = '';
             document.getElementById('customDescriptionDesktop').value = '';
+            document.getElementById('discountAmount').value = '';
+            document.getElementById('discountDescription').value = '';
+            document.getElementById('discountAmountDesktop').value = '';
+            document.getElementById('discountDescriptionDesktop').value = '';
             selectedItems = {};
             
             document.querySelectorAll('.product-btn').forEach(btn => {
@@ -728,6 +769,10 @@
             document.getElementById('customAmount').addEventListener('input', updateSubmitButton);
             document.getElementById('customAmountDesktop').addEventListener('input', updateTotal);
             document.getElementById('customAmountDesktop').addEventListener('input', updateSubmitButton);
+            document.getElementById('discountAmount').addEventListener('input', updateTotal);
+            document.getElementById('discountAmount').addEventListener('input', updateSubmitButton);
+            document.getElementById('discountAmountDesktop').addEventListener('input', updateTotal);
+            document.getElementById('discountAmountDesktop').addEventListener('input', updateSubmitButton);
         });
     </script>
 </body>
