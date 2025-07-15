@@ -497,12 +497,12 @@
                         
                         if (jsonResult.success) {
                             orders = jsonResult.orders || [];
-                            console.log('נטענו', orders.length, 'הזמנות');
+                            console.log('נטענו', orders.length, 'פריטים פעילים');
                             
-                            // עדכון הסטטוסים מהגיליון
-                            orders.forEach(order => {
-                                if (order.orderId && order.status) {
-                                    ordersStatus[order.orderId] = order.status;
+                            // עדכון הסטטוסים מהגיליון הפעיל
+                            orders.forEach(item => {
+                                if (item.orderId && item.status) {
+                                    ordersStatus[item.orderId] = item.status;
                                 }
                             });
                             
@@ -595,10 +595,10 @@
                 return;
             }
             
-            // פילטור הזמנות מהיום בלבד
-            const todayOrders = orders.filter(order => isToday(order.date));
+            // פילטור פריטים מהיום בלבד
+            const todayItems = orders.filter(item => isToday(item.date));
             
-            if (todayOrders.length === 0) {
+            if (todayItems.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
                         <h3>אין הזמנות מהיום</h3>
@@ -607,13 +607,6 @@
                 `;
                 return;
             }
-            
-            // פיצול הזמנות לפריטים נפרדים
-            const allItems = [];
-            todayOrders.forEach(order => {
-                const items = splitOrderItems(order);
-                allItems.push(...items);
-            });
             
             const tableHTML = `
                 <table class="orders-table">
@@ -627,7 +620,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        ${allItems.map(item => createOrderRow(item)).join('')}
+                        ${todayItems.map(item => createOrderRow(item)).join('')}
                     </tbody>
                 </table>
             `;
@@ -652,38 +645,7 @@
             return orderDateStr.includes(today.getDate().toString()) && 
                    orderDateStr.includes((today.getMonth() + 1).toString()) &&
                    orderDateStr.includes(today.getFullYear().toString());
-        }
-        
-        // פונקציה לפיצול הזמנות עם כמויות למשקאות נפרדים
-        function splitOrderItems(order) {
-            const products = order.products;
-            const items = [];
-            
-            // פיצול המוצרים לפי פסיק
-            const productList = products.split(', ');
-            
-            productList.forEach(product => {
-                // חיפוש דפוס של כמות בסוגריים כמו "בירה (3)"
-                const quantityMatch = product.match(/^(.+?)\s*\((\d+)\)$/);
-                
-                if (quantityMatch) {
-                    const itemName = quantityMatch[1].trim();
-                    const quantity = parseInt(quantityMatch[2]);
-                    
-                    // יצירת שורה נפרדת לכל כמות
-                    for (let i = 0; i < quantity; i++) {
-                        items.push({
-                            ...order,
-                            products: itemName,
-                            itemId: `${order.orderId}-${i}`
-                        });
-                    }
-                } else {
-                    // אם אין כמות, זה פריט יחיד
-                    items.push({
-                        ...order,
-                        products: product.trim(),
-                        itemId: order.orderId
+        }Id: order.orderId
                     });
                 }
             });
@@ -735,7 +697,7 @@
         }
         // פונקציה ליצירת שורת הזמנה
         function createOrderRow(item) {
-            const itemId = item.itemId || item.orderId;
+            const itemId = item.orderId; // זה כבר ה-itemId הנכון מהגיליון הפעיל
             const currentStatus = ordersStatus[itemId] || item.status || 'pending';
             
             // יצירת הסלייד
@@ -772,11 +734,11 @@
         }
         
         // פונקציה לעדכון סטטוס בגיליון
-        async function updateStatusInSheet(orderId, newStatus) {
+        async function updateStatusInSheet(itemId, newStatus) {
             try {
                 const params = new URLSearchParams({
                     action: 'updateStatus',
-                    orderId: orderId,
+                    orderId: itemId,  // זה בעצם itemId
                     newStatus: newStatus
                 });
                 
