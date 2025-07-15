@@ -53,6 +53,10 @@
             color: #8B4513;
         }
         
+        .content {
+            padding: 30px 40px;
+        }
+        
         .control-panel {
             background: #f8f9fa;
             padding: 20px;
@@ -97,33 +101,6 @@
         .status-info.active {
             color: #28a745;
             font-weight: bold;
-        }
-        
-        .content {
-            padding: 30px 40px;
-        }
-        
-        .refresh-info {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .refresh-dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background: #28a745;
-            border-radius: 50%;
-            margin-left: 8px;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.3; }
-            100% { opacity: 1; }
         }
         
         .orders-table {
@@ -336,26 +313,26 @@
             }
             
             .status-cell {
-                width: 160px;
+                width: 180px;
             }
             
             .status-slider {
-                padding: 6px;
-                gap: 6px;
+                padding: 8px;
+                gap: 8px;
             }
             
             .status-step {
-                min-width: 40px;
-                padding: 4px;
+                min-width: 45px;
+                padding: 6px;
             }
             
             .status-dot {
-                width: 8px;
-                height: 8px;
+                width: 10px;
+                height: 10px;
             }
             
             .status-label {
-                font-size: 8px;
+                font-size: 9px;
             }
         }
         
@@ -398,26 +375,26 @@
             }
             
             .status-cell {
-                width: 140px;
+                width: 160px;
             }
             
             .status-slider {
-                padding: 4px;
-                gap: 4px;
+                padding: 6px;
+                gap: 6px;
             }
             
             .status-step {
-                min-width: 35px;
-                padding: 3px;
+                min-width: 40px;
+                padding: 4px;
             }
             
             .status-dot {
-                width: 6px;
-                height: 6px;
+                width: 8px;
+                height: 8px;
             }
             
             .status-label {
-                font-size: 7px;
+                font-size: 8px;
             }
             
             .control-panel {
@@ -579,6 +556,65 @@
             `;
         }
         
+        // פונקציה לבדיקה אם תאריך הוא מהיום
+        function isToday(dateStr) {
+            if (!dateStr) return false;
+            
+            const today = new Date();
+            const todayStr = cleanDate(today.toDateString());
+            const orderDateStr = cleanDate(dateStr);
+            
+            // השוואה פשוטה של התאריכים
+            return orderDateStr.includes(today.getDate().toString()) && 
+                   orderDateStr.includes((today.getMonth() + 1).toString()) &&
+                   orderDateStr.includes(today.getFullYear().toString());
+        }
+        
+        // פונקציה לניקוי תאריך
+        function cleanDate(dateStr) {
+            if (!dateStr) return 'לא צוין';
+            
+            const str = dateStr.toString();
+            
+            // אם יש GMT, זה Date object שהומר למחרוזת
+            if (str.includes('GMT')) {
+                // נחפש דפוס של תאריך בסגנון "Mon Jun 30 2025"
+                const dateMatch = str.match(/(\w{3})\s+(\w{3})\s+(\d{1,2})\s+(\d{4})/);
+                if (dateMatch) {
+                    const [, dayName, month, day, year] = dateMatch;
+                    
+                    // המרת חודש לספרות
+                    const months = {
+                        'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+                        'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+                        'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+                    };
+                    
+                    const monthNum = months[month] || month;
+                    return `${day.padStart(2, '0')}/${monthNum}/${year}`;
+                }
+            }
+            
+            // אם זה כבר נראה כמו תאריך רגיל, נחזיר כמו שזה
+            return str;
+        }
+        
+        // פונקציה לניקוי שעה
+        function cleanTime(timeStr) {
+            if (!timeStr) return 'לא צוין';
+            
+            const str = timeStr.toString();
+            
+            // נחפש דפוס של שעה:דקה:שניה
+            const timeMatch = str.match(/(\d{1,2}):(\d{2}):(\d{2})/);
+            if (timeMatch) {
+                return `${timeMatch[1].padStart(2, '0')}:${timeMatch[2]}`;
+            }
+            
+            // אם זה כבר נראה כמו שעה רגילה, נחזיר כמו שזה
+            return str;
+        }
+        
         // פונקציה להצגת ההזמנות
         function renderOrders() {
             if (!isSystemActive) return;
@@ -633,68 +669,6 @@
             });
         }
         
-        // פונקציה לבדיקה אם תאריך הוא מהיום
-        function isToday(dateStr) {
-            if (!dateStr) return false;
-            
-            const today = new Date();
-            const todayStr = cleanDate(today.toDateString());
-            const orderDateStr = cleanDate(dateStr);
-            
-            // השוואה פשוטה של התאריכים
-            return orderDateStr.includes(today.getDate().toString()) && 
-                   orderDateStr.includes((today.getMonth() + 1).toString()) &&
-                   orderDateStr.includes(today.getFullYear().toString());
-        }Id: order.orderId
-                    });
-                }
-            });
-            
-            return items;
-        }
-        function cleanDate(dateStr) {
-            if (!dateStr) return 'לא צוין';
-            
-            const str = dateStr.toString();
-            
-            // אם יש GMT, זה Date object שהומר למחרוזת
-            if (str.includes('GMT')) {
-                // נחפש דפוס של תאריך בסגנון "Mon Jun 30 2025"
-                const dateMatch = str.match(/(\w{3})\s+(\w{3})\s+(\d{1,2})\s+(\d{4})/);
-                if (dateMatch) {
-                    const [, dayName, month, day, year] = dateMatch;
-                    
-                    // המרת חודש לספרות
-                    const months = {
-                        'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
-                        'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
-                        'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
-                    };
-                    
-                    const monthNum = months[month] || month;
-                    return `${day.padStart(2, '0')}/${monthNum}/${year}`;
-                }
-            }
-            
-            // אם זה כבר נראה כמו תאריך רגיל, נחזיר כמו שזה
-            return str;
-        }
-        
-        // פונקציה לניקוי שעה
-        function cleanTime(timeStr) {
-            if (!timeStr) return 'לא צוין';
-            
-            const str = timeStr.toString();
-            
-            // נחפש דפוס של שעה:דקה:שניה
-            const timeMatch = str.match(/(\d{1,2}):(\d{2}):(\d{2})/);
-            if (timeMatch) {
-                return `${timeMatch[1].padStart(2, '0')}:${timeMatch[2]}`;
-            }
-            
-            // אם זה כבר נראה כמו שעה רגילה, נחזיר כמו שזה
-            return str;
-        }
         // פונקציה ליצירת שורת הזמנה
         function createOrderRow(item) {
             const itemId = item.orderId; // זה כבר ה-itemId הנכון מהגיליון הפעיל
@@ -733,62 +707,7 @@
             `;
         }
         
-        // פונקציה להפעלת המערכת
-        function startSystem() {
-            isSystemActive = true;
-            const toggleBtn = document.getElementById('toggleBtn');
-            const statusInfo = document.getElementById('statusInfo');
-            
-            toggleBtn.textContent = 'עצור מערכת';
-            toggleBtn.classList.add('active');
-            statusInfo.textContent = 'המערכת פעילה - מתרענן כל 20 שניות';
-            statusInfo.classList.add('active');
-            
-            // טעינה מיידית
-            loadOrders();
-            
-            // רענון אוטומטי כל 20 שניות
-            refreshInterval = setInterval(loadOrders, 20000);
-            
-            // עצירה אוטומטית אחרי 5 שעות (5 * 60 * 60 * 1000 = 18,000,000 מילישניות)
-            autoStopTimeout = setTimeout(() => {
-                stopSystem();
-                alert('המערכת נעצרה אוטומטית אחרי 5 שעות');
-            }, 5 * 60 * 60 * 1000);
-        }
-        
-        // פונקציה לעצירת המערכת
-        function stopSystem() {
-            isSystemActive = false;
-            const toggleBtn = document.getElementById('toggleBtn');
-            const statusInfo = document.getElementById('statusInfo');
-            
-            toggleBtn.textContent = 'הפעל מערכת';
-            toggleBtn.classList.remove('active');
-            statusInfo.textContent = 'המערכת כבויה - לחץ להפעלה';
-            statusInfo.classList.remove('active');
-            
-            // עצירת הרענון
-            if (refreshInterval) {
-                clearInterval(refreshInterval);
-                refreshInterval = null;
-            }
-            
-            // עצירת הטיימר האוטומטי
-            if (autoStopTimeout) {
-                clearTimeout(autoStopTimeout);
-                autoStopTimeout = null;
-            }
-            
-            // הצגת מסך כבוי
-            const container = document.getElementById('ordersContainer');
-            container.innerHTML = `
-                <div class="empty-state">
-                    <h3>המערכת כבויה</h3>
-                    <p>לחץ על "הפעל מערכת" כדי להתחיל לטעון הזמנות</p>
-                </div>
-            `;
-        }
+        // פונקציה לעדכון סטטוס בגיליון
         async function updateStatusInSheet(itemId, newStatus) {
             try {
                 const params = new URLSearchParams({
@@ -857,7 +776,7 @@
         }
         
         // אתחול הדף
-        async function init() {
+        function init() {
             loadStoredStatuses();
             
             // הוספת event listener לכפתור ההפעלה
