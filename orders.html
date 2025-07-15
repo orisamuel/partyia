@@ -733,7 +733,62 @@
             `;
         }
         
-        // פונקציה לעדכון סטטוס בגיליון
+        // פונקציה להפעלת המערכת
+        function startSystem() {
+            isSystemActive = true;
+            const toggleBtn = document.getElementById('toggleBtn');
+            const statusInfo = document.getElementById('statusInfo');
+            
+            toggleBtn.textContent = 'עצור מערכת';
+            toggleBtn.classList.add('active');
+            statusInfo.textContent = 'המערכת פעילה - מתרענן כל 20 שניות';
+            statusInfo.classList.add('active');
+            
+            // טעינה מיידית
+            loadOrders();
+            
+            // רענון אוטומטי כל 20 שניות
+            refreshInterval = setInterval(loadOrders, 20000);
+            
+            // עצירה אוטומטית אחרי 5 שעות (5 * 60 * 60 * 1000 = 18,000,000 מילישניות)
+            autoStopTimeout = setTimeout(() => {
+                stopSystem();
+                alert('המערכת נעצרה אוטומטית אחרי 5 שעות');
+            }, 5 * 60 * 60 * 1000);
+        }
+        
+        // פונקציה לעצירת המערכת
+        function stopSystem() {
+            isSystemActive = false;
+            const toggleBtn = document.getElementById('toggleBtn');
+            const statusInfo = document.getElementById('statusInfo');
+            
+            toggleBtn.textContent = 'הפעל מערכת';
+            toggleBtn.classList.remove('active');
+            statusInfo.textContent = 'המערכת כבויה - לחץ להפעלה';
+            statusInfo.classList.remove('active');
+            
+            // עצירת הרענון
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+            
+            // עצירת הטיימר האוטומטי
+            if (autoStopTimeout) {
+                clearTimeout(autoStopTimeout);
+                autoStopTimeout = null;
+            }
+            
+            // הצגת מסך כבוי
+            const container = document.getElementById('ordersContainer');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>המערכת כבויה</h3>
+                    <p>לחץ על "הפעל מערכת" כדי להתחיל לטעון הזמנות</p>
+                </div>
+            `;
+        }
         async function updateStatusInSheet(itemId, newStatus) {
             try {
                 const params = new URLSearchParams({
@@ -802,7 +857,7 @@
         }
         
         // אתחול הדף
-        function init() {
+        async function init() {
             loadStoredStatuses();
             
             // הוספת event listener לכפתור ההפעלה
