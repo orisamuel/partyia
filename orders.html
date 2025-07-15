@@ -564,10 +564,20 @@
             const todayStr = cleanDate(today.toDateString());
             const orderDateStr = cleanDate(dateStr);
             
+            // דיבוג
+            console.log('בודק תאריך:', dateStr);
+            console.log('תאריך מנוקה:', orderDateStr);
+            console.log('היום:', todayStr);
+            console.log('תאריך של היום:', today.getDate(), today.getMonth() + 1, today.getFullYear());
+            
             // השוואה פשוטה של התאריכים
-            return orderDateStr.includes(today.getDate().toString()) && 
+            const isFromToday = orderDateStr.includes(today.getDate().toString()) && 
                    orderDateStr.includes((today.getMonth() + 1).toString()) &&
                    orderDateStr.includes(today.getFullYear().toString());
+            
+            console.log('האם מהיום:', isFromToday);
+            
+            return isFromToday;
         }
         
         // פונקציה לניקוי תאריך
