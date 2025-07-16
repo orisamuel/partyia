@@ -158,72 +158,109 @@
         }
         
         .status-cell {
-            width: 200px;
+            width: 220px;
             text-align: center;
             padding: 10px;
         }
         
-        .status-slider {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 20px;
-            border: 2px solid #e9ecef;
+        /* עיצוב חדש לדסקטופ - Switch Mode */
+        .status-switch {
+            display: inline-flex;
+            background: #f0f0f0;
+            border-radius: 25px;
+            padding: 4px;
+            position: relative;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .status-option {
+            flex: 1;
+            padding: 10px 16px;
+            text-align: center;
             cursor: pointer;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
             transition: all 0.3s;
+            position: relative;
+            z-index: 2;
+            min-width: 65px;
         }
         
-        .status-step {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            padding: 8px;
-            border-radius: 15px;
-            transition: all 0.3s;
-            min-width: 50px;
+        .status-option.pending {
+            color: #dc3545;
         }
         
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #ddd;
-            transition: all 0.3s;
+        .status-option.preparing {
+            color: #fd7e14;
         }
         
-        .status-label {
-            font-size: 10px;
-            color: #666;
+        .status-option.ready {
+            color: #28a745;
+        }
+        
+        .status-option.active {
+            color: white;
             font-weight: bold;
         }
         
-        .status-step.active .status-dot {
-            transform: scale(1.3);
-        }
-        
-        .status-step.active .status-label {
-            color: #000;
-        }
-        
-        /* צבעים חדשים */
-        .status-step.pending.active .status-dot {
+        .status-option.active.pending {
             background: #dc3545;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
         }
         
-        .status-step.preparing.active .status-dot {
-            background: #ffc107;
+        .status-option.active.preparing {
+            background: #fd7e14;
+            box-shadow: 0 2px 8px rgba(253, 126, 20, 0.3);
         }
         
-        .status-step.ready.active .status-dot {
+        .status-option.active.ready {
             background: #28a745;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
         }
         
-        .status-slider:hover {
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        .status-option:hover:not(.active) {
+            background: rgba(0,0,0,0.05);
+        }
+        
+        /* עיצוב חדש לנייד - כפתור יחיד */
+        .status-single-btn {
+            display: none;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            min-width: 140px;
+            position: relative;
+        }
+        
+        .status-single-btn.pending {
+            background: #dc3545;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+        }
+        
+        .status-single-btn.preparing {
+            background: #fd7e14;
+            box-shadow: 0 2px 8px rgba(253, 126, 20, 0.3);
+        }
+        
+        .status-single-btn.ready {
+            background: #28a745;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+        }
+        
+        .status-single-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .status-single-btn::after {
+            content: ' ➤';
+            margin-right: 8px;
         }
         
         .empty-state {
@@ -260,6 +297,7 @@
             100% { transform: rotate(360deg); }
         }
         
+        /* רספונסיביות */
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -313,26 +351,16 @@
             }
             
             .status-cell {
-                width: 180px;
+                width: 160px;
             }
             
-            .status-slider {
-                padding: 8px;
-                gap: 8px;
+            /* החלפה לכפתור יחיד בנייד */
+            .status-switch {
+                display: none;
             }
             
-            .status-step {
-                min-width: 45px;
-                padding: 6px;
-            }
-            
-            .status-dot {
-                width: 10px;
-                height: 10px;
-            }
-            
-            .status-label {
-                font-size: 9px;
+            .status-single-btn {
+                display: inline-block;
             }
         }
         
@@ -375,26 +403,13 @@
             }
             
             .status-cell {
-                width: 160px;
+                width: 150px;
             }
             
-            .status-slider {
-                padding: 6px;
-                gap: 6px;
-            }
-            
-            .status-step {
-                min-width: 40px;
-                padding: 4px;
-            }
-            
-            .status-dot {
-                width: 8px;
-                height: 8px;
-            }
-            
-            .status-label {
-                font-size: 8px;
+            .status-single-btn {
+                min-width: 120px;
+                font-size: 12px;
+                padding: 10px 16px;
             }
             
             .control-panel {
@@ -697,18 +712,7 @@
             container.innerHTML = tableHTML;
             
             // הוספת event listeners לכפתורי הסטטוס
-            document.querySelectorAll('.status-slider').forEach(slider => {
-                // הוספת event listener לכל נקודה בנפרד
-                const steps = slider.querySelectorAll('.status-step');
-                steps.forEach(step => {
-                    step.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const targetStatus = step.classList.contains('pending') ? 'pending' :
-                                           step.classList.contains('preparing') ? 'preparing' : 'ready';
-                        window.changeOrderStatus(slider.dataset.orderId, targetStatus);
-                    });
-                });
-            });
+            setupStatusEventListeners();
         }
         
         // פונקציה ליצירת שורת הזמנה
@@ -716,19 +720,28 @@
             const itemId = item.orderId; // זה כבר ה-itemId הנכון מהגיליון הפעיל
             const currentStatus = ordersStatus[itemId] || item.status || 'pending';
             
-            // יצירת הסלייד
-            const statuses = ['pending', 'preparing', 'ready'];
+            // יצירת Switch לדסקטופ
             const statusLabels = { pending: 'ממתין', preparing: 'בהכנה', ready: 'מוכן' };
+            const statusOptions = ['pending', 'preparing', 'ready'];
             
-            const statusSteps = statuses.map(status => {
-                const isActive = status === currentStatus;
-                return `
-                    <div class="status-step ${status} ${isActive ? 'active' : ''}">
-                        <div class="status-dot"></div>
-                        <div class="status-label">${statusLabels[status]}</div>
-                    </div>
-                `;
-            }).join('');
+            const switchHTML = `
+                <div class="status-switch" data-order-id="${itemId}">
+                    ${statusOptions.map(status => `
+                        <div class="status-option ${status} ${status === currentStatus ? 'active' : ''}" 
+                             data-status="${status}">
+                            ${statusLabels[status]}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            // יצירת כפתור יחיד לנייד
+            const nextStatus = getNextStatus(currentStatus);
+            const singleBtnHTML = `
+                <button class="status-single-btn ${currentStatus}" data-order-id="${itemId}" data-next-status="${nextStatus}">
+                    ${statusLabels[currentStatus]}
+                </button>
+            `;
             
             // ניקוי התאריך והשעה
             const cleanedDate = cleanDate(item.date);
@@ -741,12 +754,44 @@
                     <td class="name-cell">${item.customerName}</td>
                     <td class="products-cell">${item.products}</td>
                     <td class="status-cell">
-                        <div class="status-slider" data-order-id="${itemId}">
-                            ${statusSteps}
-                        </div>
+                        ${switchHTML}
+                        ${singleBtnHTML}
                     </td>
                 </tr>
             `;
+        }
+        
+        // פונקציה לקבלת הסטטוס הבא
+        function getNextStatus(currentStatus) {
+            const statusFlow = {
+                'pending': 'preparing',
+                'preparing': 'ready',
+                'ready': 'pending'
+            };
+            return statusFlow[currentStatus] || 'pending';
+        }
+        
+        // פונקציה להוספת Event Listeners
+        function setupStatusEventListeners() {
+            // Event listeners לdesktp switch
+            document.querySelectorAll('.status-switch').forEach(switchElement => {
+                switchElement.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('status-option')) {
+                        const itemId = switchElement.dataset.orderId;
+                        const newStatus = e.target.dataset.status;
+                        window.changeOrderStatus(itemId, newStatus);
+                    }
+                });
+            });
+            
+            // Event listeners לmobile button
+            document.querySelectorAll('.status-single-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const itemId = btn.dataset.orderId;
+                    const nextStatus = btn.dataset.nextStatus;
+                    window.changeOrderStatus(itemId, nextStatus);
+                });
+            });
         }
         
         // פונקציה לעדכון סטטוס בגיליון
@@ -790,22 +835,36 @@
             }
         }
         
-        // פונקציה לעדכון סלייד ספציפי
-        function updateSingleSlider(itemId, newStatus) {
-            const slider = document.querySelector(`[data-order-id="${itemId}"]`);
-            if (!slider) return;
+        // פונקציה לעדכון תצוגה מקומית
+        function updateLocalDisplay(itemId, newStatus) {
+            // עדכון Switch בdesktp
+            const switchElement = document.querySelector(`.status-switch[data-order-id="${itemId}"]`);
+            if (switchElement) {
+                const options = switchElement.querySelectorAll('.status-option');
+                options.forEach(option => {
+                    if (option.dataset.status === newStatus) {
+                        option.classList.add('active');
+                    } else {
+                        option.classList.remove('active');
+                    }
+                });
+            }
             
-            const statuses = ['pending', 'preparing', 'ready'];
-            const steps = slider.querySelectorAll('.status-step');
-            
-            steps.forEach((step, index) => {
-                const status = statuses[index];
-                if (status === newStatus) {
-                    step.classList.add('active');
-                } else {
-                    step.classList.remove('active');
-                }
-            });
+            // עדכון כפתור בmobile
+            const singleBtn = document.querySelector(`.status-single-btn[data-order-id="${itemId}"]`);
+            if (singleBtn) {
+                const statusLabels = { pending: 'ממתין', preparing: 'בהכנה', ready: 'מוכן' };
+                const nextStatus = getNextStatus(newStatus);
+                
+                // הסרת כל הclass-ים הישנים
+                singleBtn.classList.remove('pending', 'preparing', 'ready');
+                // הוספת class חדש
+                singleBtn.classList.add(newStatus);
+                // עדכון הטקסט
+                singleBtn.textContent = statusLabels[newStatus];
+                // עדכון ה-data attribute
+                singleBtn.dataset.nextStatus = nextStatus;
+            }
         }
         
         // פונקציה לשינוי סטטוס הזמנה - מתוקנת ומשופרת
@@ -825,7 +884,7 @@
                 
                 // עדכון מיידי בזיכרון ובתצוגה
                 ordersStatus[itemId] = targetStatus;
-                updateSingleSlider(itemId, targetStatus);
+                updateLocalDisplay(itemId, targetStatus);
                 console.log('עדכון מקומי מיידי בוצע');
                 
                 // עדכון בגיליון ברקע
@@ -837,14 +896,14 @@
                     console.error('שגיאה בעדכון סטטוס בגיליון - מחזיר לסטטוס קודם');
                     // אם נכשל, נחזיר לסטטוס הקודם
                     ordersStatus[itemId] = currentStatus;
-                    updateSingleSlider(itemId, currentStatus);
+                    updateLocalDisplay(itemId, currentStatus);
                 }
                 
             } catch (error) {
                 console.error('שגיאה בפונקציית changeOrderStatus:', error);
                 // במקרה של שגיאה, נחזיר לסטטוס הקודם
                 ordersStatus[itemId] = currentStatus;
-                updateSingleSlider(itemId, currentStatus);
+                updateLocalDisplay(itemId, currentStatus);
             }
         }
         
