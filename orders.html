@@ -648,8 +648,24 @@
                 return;
             }
             
-            // פילטור פריטים מהיום בלבד - זמנית מושבת לבדיקה
-            const todayItems = orders; // orders.filter(item => isToday(item.date));
+            // פילטור פריטים מהיום בלבד
+            console.log('=== מתחיל פילטור תאריכים ===');
+            console.log('סה"כ פריטים לפני פילטור:', orders.length);
+            
+            if (orders.length > 0) {
+                console.log('דוגמה לתאריך:', orders[0].date);
+                console.log('בדיקת isToday לדוגמה:', isToday(orders[0].date));
+            }
+            
+            const todayItems = orders.filter(item => {
+                const result = isToday(item.date);
+                if (!result) {
+                    console.log('מסנן פריט:', item.customerName, item.date);
+                }
+                return result;
+            });
+            
+            console.log('פריטים אחרי פילטור:', todayItems.length);
             
             if (todayItems.length === 0) {
                 container.innerHTML = `
@@ -682,7 +698,7 @@
             
             // הוספת event listeners לכפתורי הסטטוס
             document.querySelectorAll('.status-slider').forEach(slider => {
-                slider.addEventListener('click', toggleOrderStatus);
+                slider.addEventListener('click', window.toggleOrderStatus);
             });
         }
         
@@ -752,42 +768,46 @@
         }
         
         // פונקציה לשינוי סטטוס הזמנה
-        async function toggleOrderStatus(event) {
-            const slider = event.currentTarget;
-            const itemId = slider.dataset.orderId;
-            const currentStatus = ordersStatus[itemId] || 'pending';
-            
-            console.log('=== מתחיל שינוי סטטוס ===');
-            console.log('מזהה פריט:', itemId);
-            console.log('סטטוס נוכחי:', currentStatus);
-            
-            // מעבר לסטטוס הבא
-            const statusFlow = {
-                pending: 'preparing',
-                preparing: 'ready',
-                ready: 'pending'
-            };
-            
-            const newStatus = statusFlow[currentStatus];
-            console.log('סטטוס חדש:', newStatus);
-            
-            ordersStatus[itemId] = newStatus;
-            console.log('עדכון מקומי בוצע');
-            
-            // עדכון מיידי בתצוגה
-            renderOrders();
-            console.log('רינדור מיידי בוצע');
-            
-            // עדכון בגיליון
-            console.log('שולח עדכון לשרת...');
-            const success = await updateStatusInSheet(itemId, newStatus);
-            console.log('תוצאת עדכון בשרת:', success);
-            
-            if (!success) {
-                console.error('שגיאה בעדכון סטטוס בגיליון');
-                // אם נכשל, נחזיר לסטטוס הקודם
-                ordersStatus[itemId] = currentStatus;
+        window.toggleOrderStatus = async function(event) {
+            try {
+                const slider = event.currentTarget;
+                const itemId = slider.dataset.orderId;
+                const currentStatus = ordersStatus[itemId] || 'pending';
+                
+                console.log('=== מתחיל שינוי סטטוס ===');
+                console.log('מזהה פריט:', itemId);
+                console.log('סטטוס נוכחי:', currentStatus);
+                
+                // מעבר לסטטוס הבא
+                const statusFlow = {
+                    pending: 'preparing',
+                    preparing: 'ready',
+                    ready: 'pending'
+                };
+                
+                const newStatus = statusFlow[currentStatus];
+                console.log('סטטוס חדש:', newStatus);
+                
+                ordersStatus[itemId] = newStatus;
+                console.log('עדכון מקומי בוצע');
+                
+                // עדכון מיידי בתצוגה
                 renderOrders();
+                console.log('רינדור מיידי בוצע');
+                
+                // עדכון בגיליון
+                console.log('שולח עדכון לשרת...');
+                const success = await updateStatusInSheet(itemId, newStatus);
+                console.log('תוצאת עדכון בשרת:', success);
+                
+                if (!success) {
+                    console.error('שגיאה בעדכון סטטוס בגיליון');
+                    // אם נכשל, נחזיר לסטטוס הקודם
+                    ordersStatus[itemId] = currentStatus;
+                    renderOrders();
+                }
+            } catch (error) {
+                console.error('שגיאה בפונקציית toggleOrderStatus:', error);
             }
         }
         
