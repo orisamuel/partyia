@@ -474,14 +474,21 @@
                         
                         if (jsonResult.success) {
                             orders = jsonResult.orders || [];
-                            console.log('נטענו', orders.length, 'פריטים פעילים');
+                            console.log('=== נטענו נתונים מהשרת ===');
+                            console.log('מספר פריטים:', orders.length);
+                            
+                            // דיבוג - נראה מה קורה עם הסטטוסים
+                            console.log('סטטוסים לפני עדכון:', JSON.stringify(ordersStatus));
                             
                             // עדכון הסטטוסים מהגיליון הפעיל
                             orders.forEach(item => {
                                 if (item.orderId && item.status) {
+                                    console.log(`מעדכן סטטוס ${item.orderId}: ${ordersStatus[item.orderId]} -> ${item.status}`);
                                     ordersStatus[item.orderId] = item.status;
                                 }
                             });
+                            
+                            console.log('סטטוסים אחרי עדכון:', JSON.stringify(ordersStatus));
                             
                             renderOrders();
                         } else {
@@ -641,8 +648,8 @@
                 return;
             }
             
-            // פילטור פריטים מהיום בלבד
-            const todayItems = orders.filter(item => isToday(item.date));
+            // פילטור פריטים מהיום בלבד - זמנית מושבת לבדיקה
+            const todayItems = orders; // orders.filter(item => isToday(item.date));
             
             if (todayItems.length === 0) {
                 container.innerHTML = `
@@ -750,6 +757,10 @@
             const itemId = slider.dataset.orderId;
             const currentStatus = ordersStatus[itemId] || 'pending';
             
+            console.log('=== מתחיל שינוי סטטוס ===');
+            console.log('מזהה פריט:', itemId);
+            console.log('סטטוס נוכחי:', currentStatus);
+            
             // מעבר לסטטוס הבא
             const statusFlow = {
                 pending: 'preparing',
@@ -758,13 +769,20 @@
             };
             
             const newStatus = statusFlow[currentStatus];
+            console.log('סטטוס חדש:', newStatus);
+            
             ordersStatus[itemId] = newStatus;
+            console.log('עדכון מקומי בוצע');
             
             // עדכון מיידי בתצוגה
             renderOrders();
+            console.log('רינדור מיידי בוצע');
             
             // עדכון בגיליון
+            console.log('שולח עדכון לשרת...');
             const success = await updateStatusInSheet(itemId, newStatus);
+            console.log('תוצאת עדכון בשרת:', success);
+            
             if (!success) {
                 console.error('שגיאה בעדכון סטטוס בגיליון');
                 // אם נכשל, נחזיר לסטטוס הקודם
