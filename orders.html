@@ -698,7 +698,16 @@
             
             // הוספת event listeners לכפתורי הסטטוס
             document.querySelectorAll('.status-slider').forEach(slider => {
-                slider.addEventListener('click', window.toggleOrderStatus);
+                // הוספת event listener לכל נקודה בנפרד
+                const steps = slider.querySelectorAll('.status-step');
+                steps.forEach(step => {
+                    step.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const targetStatus = step.classList.contains('pending') ? 'pending' :
+                                           step.classList.contains('preparing') ? 'preparing' : 'ready';
+                        window.changeOrderStatus(slider.dataset.orderId, targetStatus);
+                    });
+                });
             });
         }
         
@@ -799,43 +808,43 @@
             });
         }
         
-        // פונקציה לשינוי סטטוס הזמנה - מתוקנת
-        window.toggleOrderStatus = async function(event) {
+        // פונקציה לשינוי סטטוס הזמנה - מתוקנת ומשופרת
+        window.changeOrderStatus = async function(itemId, targetStatus) {
             try {
-                const slider = event.currentTarget;
-                const itemId = slider.dataset.orderId;
                 const currentStatus = ordersStatus[itemId] || 'pending';
+                
+                // אם הסטטוס כבר נכון, לא עושים כלום
+                if (currentStatus === targetStatus) {
+                    return;
+                }
                 
                 console.log('=== מתחיל שינוי סטטוס ===');
                 console.log('מזהה פריט:', itemId);
                 console.log('סטטוס נוכחי:', currentStatus);
+                console.log('סטטוס יעד:', targetStatus);
                 
-                // מעבר לסטטוס הבא
-                const statusFlow = {
-                    pending: 'preparing',
-                    preparing: 'ready',
-                    ready: 'pending'
-                };
+                // עדכון מיידי בזיכרון ובתצוגה
+                ordersStatus[itemId] = targetStatus;
+                updateSingleSlider(itemId, targetStatus);
+                console.log('עדכון מקומי מיידי בוצע');
                 
-                const newStatus = statusFlow[currentStatus];
-                console.log('סטטוס חדש:', newStatus);
-                
-                // עדכון בגיליון קודם
+                // עדכון בגיליון ברקע
                 console.log('שולח עדכון לשרת...');
-                const success = await updateStatusInSheet(itemId, newStatus);
+                const success = await updateStatusInSheet(itemId, targetStatus);
                 console.log('תוצאת עדכון בשרת:', success);
                 
-                if (success) {
-                    // רק אם הצליח - נעדכן את הזיכרון והתצוגה
-                    ordersStatus[itemId] = newStatus;
-                    updateSingleSlider(itemId, newStatus);
-                    console.log('עדכון מקומי הושלם');
-                } else {
-                    console.error('שגיאה בעדכון סטטוס בגיליון - לא מבצע שינוי מקומי');
+                if (!success) {
+                    console.error('שגיאה בעדכון סטטוס בגיליון - מחזיר לסטטוס קודם');
+                    // אם נכשל, נחזיר לסטטוס הקודם
+                    ordersStatus[itemId] = currentStatus;
+                    updateSingleSlider(itemId, currentStatus);
                 }
                 
             } catch (error) {
-                console.error('שגיאה בפונקציית toggleOrderStatus:', error);
+                console.error('שגיאה בפונקציית changeOrderStatus:', error);
+                // במקרה של שגיאה, נחזיר לסטטוס הקודם
+                ordersStatus[itemId] = currentStatus;
+                updateSingleSlider(itemId, currentStatus);
             }
         }
         
