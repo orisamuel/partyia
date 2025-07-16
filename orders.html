@@ -745,24 +745,38 @@
             try {
                 const params = new URLSearchParams({
                     action: 'updateStatus',
-                    orderId: itemId,  // זה בעצם itemId
+                    orderId: itemId,
                     newStatus: newStatus
                 });
+                
+                console.log('URL שנשלח:', `${GOOGLE_SCRIPT_URL}?${params.toString()}`);
                 
                 const response = await fetch(`${GOOGLE_SCRIPT_URL}?${params.toString()}`, {
                     method: 'GET'
                 });
                 
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
                 if (response.ok) {
                     const result = await response.text();
-                    const jsonResult = JSON.parse(result);
-                    return jsonResult.success;
+                    console.log('תוכן תשובה גולמי:', result);
+                    
+                    try {
+                        const jsonResult = JSON.parse(result);
+                        console.log('תוכן תשובה מפורסר:', jsonResult);
+                        return jsonResult.success;
+                    } catch (parseError) {
+                        console.error('שגיאה בפרסור JSON:', parseError);
+                        console.log('התוכן שלא ניתן לפרסר:', result);
+                        return false;
+                    }
                 } else {
-                    console.error('שגיאה בעדכון סטטוס:', response.status);
+                    console.error('שגיאה בבקשה HTTP:', response.status);
                     return false;
                 }
             } catch (error) {
-                console.error('שגיאה בעדכון סטטוס:', error);
+                console.error('שגיאה כללית בעדכון סטטוס:', error);
                 return false;
             }
         }
