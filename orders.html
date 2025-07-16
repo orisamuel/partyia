@@ -767,7 +767,25 @@
             }
         }
         
-        // פונקציה לשינוי סטטוס הזמנה
+        // פונקציה לעדכון סלייד ספציפי
+        function updateSingleSlider(itemId, newStatus) {
+            const slider = document.querySelector(`[data-order-id="${itemId}"]`);
+            if (!slider) return;
+            
+            const statuses = ['pending', 'preparing', 'ready'];
+            const steps = slider.querySelectorAll('.status-step');
+            
+            steps.forEach((step, index) => {
+                const status = statuses[index];
+                if (status === newStatus) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.remove('active');
+                }
+            });
+        }
+        
+        // פונקציה לשינוי סטטוס הזמנה - מתוקנת
         window.toggleOrderStatus = async function(event) {
             try {
                 const slider = event.currentTarget;
@@ -788,24 +806,20 @@
                 const newStatus = statusFlow[currentStatus];
                 console.log('סטטוס חדש:', newStatus);
                 
-                ordersStatus[itemId] = newStatus;
-                console.log('עדכון מקומי בוצע');
-                
-                // עדכון מיידי בתצוגה
-                renderOrders();
-                console.log('רינדור מיידי בוצע');
-                
-                // עדכון בגיליון
+                // עדכון בגיליון קודם
                 console.log('שולח עדכון לשרת...');
                 const success = await updateStatusInSheet(itemId, newStatus);
                 console.log('תוצאת עדכון בשרת:', success);
                 
-                if (!success) {
-                    console.error('שגיאה בעדכון סטטוס בגיליון');
-                    // אם נכשל, נחזיר לסטטוס הקודם
-                    ordersStatus[itemId] = currentStatus;
-                    renderOrders();
+                if (success) {
+                    // רק אם הצליח - נעדכן את הזיכרון והתצוגה
+                    ordersStatus[itemId] = newStatus;
+                    updateSingleSlider(itemId, newStatus);
+                    console.log('עדכון מקומי הושלם');
+                } else {
+                    console.error('שגיאה בעדכון סטטוס בגיליון - לא מבצע שינוי מקומי');
                 }
+                
             } catch (error) {
                 console.error('שגיאה בפונקציית toggleOrderStatus:', error);
             }
